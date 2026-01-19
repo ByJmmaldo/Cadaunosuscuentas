@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0B1121">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>CADA UNO SUS CUENTAS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- ESTILOS DARK NEON --- */
+        :root {
+            --bg-app: #0B1121; 
+            --card-bg: #151E32; 
+            --neon: #00F3FF; 
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --input-bg: #0F172A;
+            --danger: #FF2E63;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-app);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none; /* Evita el rebote elástico en iOS */
+        }
+
+        .app-container {
+            background: var(--bg-app);
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 450px) {
+            .app-container {
+                height: 85vh;
+                max-height: 800px;
+                border-radius: 24px;
+                border: 1px solid rgba(255,255,255,0.05);
+                box-shadow: 0 0 50px rgba(0, 243, 255, 0.05);
+                background: var(--bg-app);
+            }
+        }
+
+        /* Navegación y Header */
+        .nav-header {
+            padding: 20px;
+            /* Ajuste para Notches en iOS cuando es PWA */
+            padding-top: max(20px, env(safe-area-inset-top)); 
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: rgba(11, 17, 33, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            margin-right: 15px;
+            width: auto;
+            box-shadow: none;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .screen-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+            flex-direction: column;
+            /* Padding inferior extra para evitar toques fantasmas en la barra home */
+            padding: 0 25px max(30px, env(safe-area-inset-bottom)) 25px;
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+            position: relative; /* Necesario para la firma absoluta en portada */
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Scrollbar personalizado (Webkit) */
+        .screen::-webkit-scrollbar, .list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .screen::-webkit-scrollbar-track, .list-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .screen::-webkit-scrollbar-thumb, .list-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* --- PORTADA (SPLASH SCREEN) --- */
+        #splash-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            background: radial-gradient(circle at center, #1a2742 0%, #0B1121 70%);
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 50px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom right, #ffffff, #94A3B8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- PANTALLA TRANSICIÓN "CUÑAO" --- */
+        #transition-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-app);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #transition-screen.active {
+            display: flex;
+        }
+
+        .cunao-text {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--danger);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: cunaoZoom 1.5s ease-in-out forwards;
+            text-shadow: 0 0 30px var(--danger), 4px 4px 0px #fff;
+        }
+
+        @keyframes cunaoZoom {
+            0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(5deg); }
+            80% { transform: scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: scale(3); } 
+        }
+
+        /* Botones */
+        button {
+            background: var(--neon);
+            color: #0B1121;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:active { transform: scale(0.98); box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); }
+
+        button.secondary { 
+            background: transparent; 
+            color: var(--neon); 
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: none;
+        }
+        
+        button.danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(255, 46, 99, 0.3);
+            box-shadow: none;
+        }
+
+        /* Inputs */
+        input, select {
+            padding: 18px 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background-color: var(--input-bg);
+            border-radius: 14px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input:focus, select:focus { outline: none; border-color: var(--neon); }
+        
+        /* Flecha custom para el select */
+        select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27292.4%27%20height%3D%27292.4%27%3E%3Cpath%20fill%3D%27%2300F3FF%27%20d%3D%27M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2087.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%20100c3.6-3.6%205.4-7.8%205.4-12.8%200-5-1.8-9.3-5.4-12.9z%27%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+
+        /* Listas */
+        .list-container {
+            flex-grow: 1;
+            margin: 10px 0;
+            overflow-y: auto;
+            /* Scroll suave en iOS */
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        .list-item {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .summary-box {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .big-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--neon);
+            margin-top: 5px;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Result Card */
+        .result-card {
+            background: linear-gradient(90deg, var(--card-bg) 0%, rgba(21, 30, 50, 0) 100%);
+            padding: 18px 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .money-tag {
+            color: var(--neon);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* --- FIRMA / WATERMARK --- */
+        .watermark {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            opacity: 0.3;
+            text-align: center;
+            width: 100%;
+            font-weight: 300;
+            pointer-events: none;
+        }
+
+        /* Posicionamiento específico para la portada */
+        #splash-screen .watermark {
+            position: absolute;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            left: 0;
+        }
+
+        /* Posicionamiento para la pantalla final (al final del scroll) */
+        #results-screen .watermark {
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- Pantalla de Transición -->
+    <div id="transition-screen">
+        <div class="cunao-text">¡CUÑAO!</div>
+    </div>
+
+    <div id="splash-screen" class="screen active">
+        <div class="main-title">CADA UNO<br>SUS CUENTAS</div>
+        <button onclick="startApp()">EMPEZAR</button>
+        <!-- Firma Portada -->
+        <div class="watermark">by jmmaldo</div>
+    </div>
+
+    <div id="participants-screen" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" onclick="goToScreen('splash-screen')">←</button>
+            <div class="screen-title">Participantes</div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <input type="text" id="new-participant" placeholder="Nombre..." onkeypress="handleEnter(event, addParticipant)" style="margin-bottom:0;">
+            <button style="width:auto; margin:0; padding: 16px 25px;" onclick="addParticipant()">+</button>
+        </div>
+        
+        <div class="list-container" id="participants-list" style="margin-top: 20px;">
+            </div>
+
+        <button onclick="validateParticipants()">SIGUIENTE</button>
+    </div>
+
+    <div id="expenses-screen" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" onclick="goToScreen('participants-screen')">←</button>
+            <div class="screen-title">Gastos</div>
+        </div>
+
+        <div class="summary-box">
+            <small style="color:var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total Actual</small>
+            <div id="total-display" class="big-number">0.00€</div>
+        </div>
+
+        <select id="payer-select"></select>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="amount-input" placeholder="0.00 €" step="0.01" style="flex:1">
+            <input type="text" id="desc-input" placeholder="Concepto" style="flex:1.5">
+        </div>
+        
+        <button onclick="addExpense()" class="secondary" style="margin-top:5px;">AÑADIR GASTO</button>
+
+        <div class="list-container" id="expenses-list" style="margin-top: 25px;">
+            </div>
+
+        <button onclick="calculateResults()">HACER CUENTAS</button>
+    </div>
+
+    <div id="results-screen" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" onclick="goToScreen('expenses-screen')">←</button>
+            <div class="screen-title">Amortiguando pelotes</div>
+        </div>
+
+        <div style="display:flex; justify-content: space-between; margin-bottom: 20px; padding: 0 10px;">
+            <div>
+                <small style="color:var(--text-muted)">Total</small>
+                <div id="final-total" style="font-size:1.5rem; font-weight:700">0€</div>
+            </div>
+            <div style="text-align: right;">
+                <small style="color:var(--text-muted)">Por cabeza</small>
+                <div id="final-average" style="color:var(--neon); font-size:1.5rem; font-weight:700">0€</div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 0.9rem; color: var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom: 10px;">Abonos:</h3>
+        
+        <div class="list-container" id="results-list" style="margin: 0;">
+            </div>
+
+        <button onclick="shareWhatsApp()" style="background:#25D366; color:white; box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);">ENVIAR WHATSAPP</button>
+        <button class="danger" onclick="location.reload()">INICIO</button>
+        <!-- Firma Final -->
+        <div class="watermark">by jmmaldo</div>
+    </div>
+
+</div>
+
+<script>
+    let participants = [];
+    let expenses = [];
+
+    // --- TRANSICIÓN CUÑAO ---
+    function startApp() {
+        document.getElementById('splash-screen').classList.remove('active');
+        const transition = document.getElementById('transition-screen');
+        transition.classList.add('active');
+
+        setTimeout(() => {
+            transition.classList.remove('active');
+            document.getElementById('participants-screen').classList.add('active');
+        }, 1500);
+    }
+
+    function goToScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function handleEnter(e, func) {
+        if (e.key === 'Enter') {
+            func();
+            document.activeElement.blur();
+        }
+    }
+
+    // --- LÓGICA ---
+    function addParticipant() {
+        const input = document.getElementById('new-participant');
+        const name = input.value.trim();
+        if (name && !participants.includes(name)) {
+            participants.push(name);
+            renderParticipants();
+            input.value = '';
+            input.focus();
+        } else if (participants.includes(name)) {
+            alert('Nombre repetido.');
+        }
+    }
+
+    // --- NUEVO: Función para eliminar participantes y botón en el renderizado ---
+    function renderParticipants() {
+        const list = document.getElementById('participants-list');
+        list.innerHTML = participants.map((p, index) => 
+            `<div class="list-item">
+                <span style="font-weight:500;">${p}</span>
+                <span onclick="removeParticipant(${index})" style="color:var(--danger); cursor:pointer; padding:5px; font-weight:bold;">✕</span>
+            </div>`
+        ).join('');
+        
+        const select = document.getElementById('payer-select');
+        select.innerHTML = participants.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    function removeParticipant(index) {
+        const name = participants[index];
+        // Comprobar si ya tiene gastos antes de borrar
+        const hasExpenses = expenses.some(e => e.payer === name);
+        if (hasExpenses) {
+            alert(`No puedes eliminar a ${name} porque tiene gastos. Bórralos primero.`);
+            return;
+        }
+        
+        participants.splice(index, 1);
+        renderParticipants();
+    }
+    // --------------------------------------------------------------------------
+
+    function validateParticipants() {
+        if (participants.length < 2) {
+            alert("Mínimo 2 personas.");
+            return;
+        }
+        goToScreen('expenses-screen');
+    }
+
+    function addExpense() {
+        const payer = document.getElementById('payer-select').value;
+        const amountInput = document.getElementById('amount-input');
+        const amount = parseFloat(amountInput.value);
+        const descInput = document.getElementById('desc-input');
+        const desc = descInput.value || 'Varios';
+
+        if (!payer || isNaN(amount) || amount <= 0) {
+            alert("Importe incorrecto.");
+            return;
+        }
+
+        expenses.push({ payer, amount, desc });
+        amountInput.value = '';
+        descInput.value = '';
+        renderExpenses();
+    }
+
+    function renderExpenses() {
+        const list = document.getElementById('expenses-list');
+        let total = 0;
+        
+        let htmlStr = expenses.map((e, index) => {
+            total += e.amount;
+            return `<div class="list-item">
+                <div>
+                    <div style="font-weight:700; color:var(--text-main);">${e.payer}</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">${e.desc}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-weight:700;">${e.amount.toFixed(2)}€</span>
+                    <span onclick="removeExpense(${index})" style="color:var(--danger); cursor:pointer; padding:5px;">✕</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        if (expenses.length === 0) {
+            htmlStr = '<p style="text-align:center; color:var(--text-muted); margin-top:30px; font-size:0.9rem;">Añade gastos arriba.</p>';
+        }
+
+        list.innerHTML = htmlStr;
+        document.getElementById('total-display').innerText = total.toFixed(2) + '€';
+    }
+
+    function removeExpense(index) {
+        expenses.splice(index, 1);
+        renderExpenses();
+    }
+
+    // --- CÁLCULOS ---
+    let finalTransactions = [];
+
+    function calculateResults() {
+        const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+        if(total === 0) { alert("No hay gastos."); return; }
+
+        const average = total / participants.length;
+
+        document.getElementById('final-total').innerText = total.toFixed(2) + '€';
+        document.getElementById('final-average').innerText = average.toFixed(2) + '€';
+
+        let balances = {};
+        participants.forEach(p => balances[p] = 0);
+        expenses.forEach(e => balances[e.payer] += e.amount);
+        
+        let debtors = [];
+        let creditors = [];
+
+        for (const person in balances) {
+            const diff = balances[person] - average;
+            if (diff < -0.01) debtors.push({ name: person, amount: Math.abs(diff) });
+            else if (diff > 0.01) creditors.push({ name: person, amount: diff });
+        }
+
+        const resultsList = document.getElementById('results-list');
+        resultsList.innerHTML = '';
+        finalTransactions = [];
+
+        let i = 0; j = 0; 
+        while (i < debtors.length && j < creditors.length) {
+            let debtor = debtors[i];
+            let creditor = creditors[j];
+            let amount = Math.min(debtor.amount, creditor.amount);
+            amount = Math.round(amount * 100) / 100;
+
+            if (amount > 0) {
+                const text = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:var(--text-main); font-size:1.1rem; font-weight:500;">
+                            ${debtor.name} <span style="color:var(--neon); margin:0 5px;">➔</span> ${creditor.name}
+                        </span>
+                        <span class="money-tag">${amount.toFixed(2)}€</span>
+                    </div>`;
+                resultsList.innerHTML += `<div class="result-card">${text}</div>`;
+                
+                finalTransactions.push(`${debtor.name} a ${creditor.name}: ${amount.toFixed(2)}€`);
+            }
+
+            debtor.amount -= amount;
+            creditor.amount -= amount;
+            if (debtor.amount < 0.01) i++;
+            if (creditor.amount < 0.01) j++;
+        }
+
+        if (finalTransactions.length === 0) {
+            resultsList.innerHTML = '<div style="text-align:center; padding:20px; color:var(--neon);">✨ ¡Nadie debe nada!</div>';
+        }
+
+        goToScreen('results-screen');
+    }
+
+    function shareWhatsApp() {
+        const total = document.getElementById('final-total').innerText;
+        const average = document.getElementById('final-average').innerText;
+        
+        let msg = `*CADA UNO SUS CUENTAS*\n`;
+        msg += `Total: ${total} | Media: ${average}\n\n`;
+        msg += `*AMORTIGUANDO PELOTES:* 💸\n`;
+        
+        if (finalTransactions.length === 0) {
+            msg += "¡Todo saldado!";
+        } else {
+            finalTransactions.forEach(t => msg += `▪️ ${t}\n`);
+        }
+        
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+</script>
+
+</body>
+</html>
