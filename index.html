@@ -2,13 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0B1121">
     <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <title>CADA UNO SUS CUENTAS</title>
     
@@ -26,6 +28,7 @@
             --text-muted: #94A3B8; 
             --input-bg: #0F172A;
             --danger: #FF2E63;
+            --telegram: #0088cc;
         }
 
         body {
@@ -39,7 +42,7 @@
             justify-content: center;
             align-items: center;
             -webkit-font-smoothing: antialiased;
-            overscroll-behavior: none; /* Evita el rebote elástico en iOS */
+            overscroll-behavior: none;
         }
 
         .app-container {
@@ -64,19 +67,16 @@
             }
         }
 
-        /* Navegación y Header */
+        /* Cabecera de Navegación */
         .nav-header {
             padding: 20px;
-            /* Ajuste para Notches en iOS cuando es PWA */
-            padding-top: max(20px, env(safe-area-inset-top)); 
             display: flex;
             align-items: center;
             position: sticky;
             top: 0;
             background: rgba(11, 17, 33, 0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             z-index: 10;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
         }
 
         .back-btn {
@@ -90,8 +90,6 @@
             width: auto;
             box-shadow: none;
             margin-top: 0;
-            display: flex;
-            align-items: center;
         }
 
         .screen-title {
@@ -104,29 +102,15 @@
         .screen {
             display: none;
             flex-direction: column;
-            /* Padding inferior extra para evitar toques fantasmas en la barra home */
-            padding: 0 25px max(30px, env(safe-area-inset-bottom)) 25px;
+            padding: 0 25px 30px 25px;
             height: 100%;
             box-sizing: border-box;
             overflow-y: auto;
             animation: fadeIn 0.3s ease;
-            position: relative; /* Necesario para la firma absoluta en portada */
         }
 
         .screen.active {
             display: flex;
-        }
-
-        /* Scrollbar personalizado (Webkit) */
-        .screen::-webkit-scrollbar, .list-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .screen::-webkit-scrollbar-track, .list-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .screen::-webkit-scrollbar-thumb, .list-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
         }
 
         /* --- PORTADA (SPLASH SCREEN) --- */
@@ -151,7 +135,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- PANTALLA TRANSICIÓN "CUÑAO" --- */
+        /* --- TRANSICIÓN "CUÑAO" --- */
         #transition-screen {
             display: none;
             position: absolute;
@@ -173,7 +157,7 @@
         .cunao-text {
             font-size: 4rem;
             font-weight: 900;
-            color: var(--danger);
+            color: var(--danger); /* Rosa neón */
             text-transform: uppercase;
             letter-spacing: 2px;
             animation: cunaoZoom 1.5s ease-in-out forwards;
@@ -198,7 +182,7 @@
             font-weight: 800;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -220,6 +204,14 @@
             color: var(--danger);
             border: 1px solid rgba(255, 46, 99, 0.3);
             box-shadow: none;
+            margin-top: 10px;
+        }
+
+        /* Botón Telegram */
+        button.telegram {
+            background: var(--telegram);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 136, 204, 0.3);
         }
 
         /* Inputs */
@@ -235,26 +227,15 @@
             color: var(--text-main);
             font-family: 'Outfit', sans-serif;
             -webkit-appearance: none;
-            appearance: none;
         }
         input::placeholder { color: rgba(255,255,255,0.3); }
         input:focus, select:focus { outline: none; border-color: var(--neon); }
-        
-        /* Flecha custom para el select */
-        select {
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27292.4%27%20height%3D%27292.4%27%3E%3Cpath%20fill%3D%27%2300F3FF%27%20d%3D%27M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2087.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%20100c3.6-3.6%205.4-7.8%205.4-12.8%200-5-1.8-9.3-5.4-12.9z%27%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px top 50%;
-            background-size: 12px auto;
-        }
 
         /* Listas */
         .list-container {
             flex-grow: 1;
             margin: 10px 0;
             overflow-y: auto;
-            /* Scroll suave en iOS */
-            -webkit-overflow-scrolling: touch; 
         }
 
         .list-item {
@@ -301,30 +282,6 @@
             font-size: 1.2rem;
         }
 
-        /* --- FIRMA / WATERMARK --- */
-        .watermark {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            opacity: 0.3;
-            text-align: center;
-            width: 100%;
-            font-weight: 300;
-            pointer-events: none;
-        }
-
-        /* Posicionamiento específico para la portada */
-        #splash-screen .watermark {
-            position: absolute;
-            bottom: max(20px, env(safe-area-inset-bottom));
-            left: 0;
-        }
-
-        /* Posicionamiento para la pantalla final (al final del scroll) */
-        #results-screen .watermark {
-            margin-top: 20px;
-            margin-bottom: 5px;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -335,7 +292,6 @@
 
 <div class="app-container">
 
-    <!-- Pantalla de Transición -->
     <div id="transition-screen">
         <div class="cunao-text">¡CUÑAO!</div>
     </div>
@@ -343,8 +299,6 @@
     <div id="splash-screen" class="screen active">
         <div class="main-title">CADA UNO<br>SUS CUENTAS</div>
         <button onclick="startApp()">EMPEZAR</button>
-        <!-- Firma Portada -->
-        <div class="watermark">by jmmaldo</div>
     </div>
 
     <div id="participants-screen" class="screen">
@@ -412,10 +366,13 @@
         <div class="list-container" id="results-list" style="margin: 0;">
             </div>
 
-        <button onclick="shareWhatsApp()" style="background:#25D366; color:white; box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);">ENVIAR WHATSAPP</button>
-        <button class="danger" onclick="location.reload()">INICIO</button>
-        <!-- Firma Final -->
-        <div class="watermark">by jmmaldo</div>
+        <button onclick="shareWhatsApp()" style="background:#25D366; color:white; box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);">WHATSAPP 💬</button>
+        <button onclick="shareTelegram()" class="telegram">TELEGRAM ✈️</button>
+        
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="secondary" onclick="goToScreen('expenses-screen')" style="margin-top:0;">EDITAR</button>
+            <button class="danger" onclick="location.reload()" style="margin-top:0;">INICIO</button>
+        </div>
     </div>
 
 </div>
@@ -462,33 +419,17 @@
         }
     }
 
-    // --- NUEVO: Función para eliminar participantes y botón en el renderizado ---
     function renderParticipants() {
         const list = document.getElementById('participants-list');
-        list.innerHTML = participants.map((p, index) => 
+        list.innerHTML = participants.map(p => 
             `<div class="list-item">
                 <span style="font-weight:500;">${p}</span>
-                <span onclick="removeParticipant(${index})" style="color:var(--danger); cursor:pointer; padding:5px; font-weight:bold;">✕</span>
             </div>`
         ).join('');
         
         const select = document.getElementById('payer-select');
         select.innerHTML = participants.map(p => `<option value="${p}">${p}</option>`).join('');
     }
-
-    function removeParticipant(index) {
-        const name = participants[index];
-        // Comprobar si ya tiene gastos antes de borrar
-        const hasExpenses = expenses.some(e => e.payer === name);
-        if (hasExpenses) {
-            alert(`No puedes eliminar a ${name} porque tiene gastos. Bórralos primero.`);
-            return;
-        }
-        
-        participants.splice(index, 1);
-        renderParticipants();
-    }
-    // --------------------------------------------------------------------------
 
     function validateParticipants() {
         if (participants.length < 2) {
@@ -609,7 +550,8 @@
         goToScreen('results-screen');
     }
 
-    function shareWhatsApp() {
+    // --- COMPARTIR ---
+    function buildMessage() {
         const total = document.getElementById('final-total').innerText;
         const average = document.getElementById('final-average').innerText;
         
@@ -623,7 +565,19 @@
             finalTransactions.forEach(t => msg += `▪️ ${t}\n`);
         }
         
+        msg += `\n📲 Hecho con la App del grupo.`;
+        return msg;
+    }
+
+    function shareWhatsApp() {
+        const msg = buildMessage();
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function shareTelegram() {
+        const msg = buildMessage();
+        const url = `https://t.me/share/url?url=${encodeURIComponent(' ')}&text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
     }
 </script>
 
